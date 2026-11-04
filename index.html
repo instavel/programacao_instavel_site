@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Programadores Instável</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: filter rail on the left, scan-friendly list in the middle, ficha slides in from the right. */
+:root {
+  --bg: #F3F4F7;
+  --surface: #FFFFFF;
+  --sunk: #E9EBF1;
+  --line: #D9DCE5;
+  --ink: #171A26;
+  --muted: #5D6377;
+  --accent: #3337C9;
+  --accent-soft: #E6E7FB;
+  --on-accent: #FFFFFF;
+  --s-none: #8A8FA0; --s-sent: #2F6FD6; --s-reply: #B7791F; --s-talk: #7A3FC4; --s-done: #1F8A55; --s-no: #B4443B;
+  --warn-bg: #FCEDEA; --warn: #A3352B;
+  --f-display: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
+  --f-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 8px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11131A; --surface: #191C25; --sunk: #222634; --line: #2E3344; --ink: #E9EBF3; --muted: #9BA1B5;
+  --accent: #9A9DFF; --accent-soft: #2A2C55; --on-accent: #11131A;
+  --s-none: #8A8FA0; --s-sent: #6EA4F5; --s-reply: #E2AC52; --s-talk: #B48AF0; --s-done: #4FC28A; --s-no: #EE7F75;
+  --warn-bg: #3A1F1D; --warn: #F19A90; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11131A; --surface: #191C25; --sunk: #222634; --line: #2E3344; --ink: #E9EBF3; --muted: #9BA1B5;
+  --accent: #9A9DFF; --accent-soft: #2A2C55; --on-accent: #11131A;
+  --s-none: #8A8FA0; --s-sent: #6EA4F5; --s-reply: #E2AC52; --s-talk: #B48AF0; --s-done: #4FC28A; --s-no: #EE7F75;
+  --warn-bg: #3A1F1D; --warn: #F19A90; color-scheme: dark }
+
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.45 }
+button, input, select, textarea { font: inherit; color: inherit }
+button { cursor: pointer }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 40px; max-width: 1480px; margin: 0 auto }
+
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: 16px }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(24px, 3vw, 32px); letter-spacing: -0.01em; margin: 0; line-height: 1.05; text-wrap: balance }
+h1 small { display: block; font-family: var(--f-body); font-weight: 500; font-size: 13px; color: var(--muted); letter-spacing: 0; margin-top: 4px }
+.actions { display: flex; flex-wrap: wrap; gap: 8px }
+
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 7px 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap }
+.btn:hover { border-color: var(--muted) }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent) }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--muted) }
+.btn.ghost:hover { color: var(--ink); border-color: var(--line) }
+.btn.danger { color: var(--warn) }
+.btn.sm { padding: 4px 9px; font-size: 13px }
+
+/* Âmbito: always visible */
+.ambito { display: inline-flex; background: var(--sunk); border-radius: 999px; padding: 3px; gap: 2px }
+.ambito button { border: 0; background: transparent; border-radius: 999px; padding: 6px 14px; font-weight: 600; color: var(--muted) }
+.ambito button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12) }
+.ambito .n { font-family: var(--f-mono); font-size: 12px; font-weight: 400; margin-left: 4px; color: var(--muted) }
+
+.statusbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 11px 4px 9px; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500 }
+.chip[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg) }
+.chip .n { font-family: var(--f-mono); font-size: 12px; opacity: .75 }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--s-none) }
+
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 20px; align-items: start }
+aside.filters { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px }
+.f label, .lbl { display: block; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px }
+.f select, .f input[type=search], .field input, .field select, .field textarea {
+  width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 7px 9px; min-width: 0 }
+.f input[type=search] { background: var(--bg) }
+.checks { display: grid; gap: 6px }
+.checks label { display: flex; gap: 8px; align-items: center; font-size: 13px; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--ink); margin: 0 }
+.filters .reset { justify-self: start }
+.filters-toggle { display: none }
+
+.results { min-width: 0 }
+.resbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: var(--muted); font-size: 13px }
+.resbar .n { font-family: var(--f-mono); color: var(--ink) }
+.resbar select { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 4px 6px }
+
+.list { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden }
+.row { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 2.4fr) 150px; gap: 14px; padding: 11px 14px; border-top: 1px solid var(--line); cursor: pointer; align-items: start; text-align: left; width: 100%; background: transparent; border-left: 0; border-right: 0; border-bottom: 0 }
+.row:first-child { border-top: 0 }
+.row:hover { background: var(--bg) }
+.row .name { font-weight: 600; font-size: 14.5px; overflow-wrap: anywhere }
+.row .sub { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere }
+.row .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px }
+.tag { font-size: 11px; font-weight: 600; letter-spacing: .02em; border-radius: 4px; padding: 1px 6px; background: var(--sunk); color: var(--muted) }
+.tag.part { background: var(--accent-soft); color: var(--accent) }
+.tag.int { display: inline-flex; align-items: center; gap: 5px; color: var(--ink) }
+.tag.int .dot { width: 7px; height: 7px }
+.loc { font-size: 13px }
+.ponto { font-size: 13px; min-width: 0 }
+.ponto .when { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); margin-right: 6px }
+.ponto .txt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line }
+.ponto .none { color: var(--muted); font-style: italic }
+.st { display: grid; gap: 5px; justify-items: start }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600 }
+.next { font-size: 12px; color: var(--muted) }
+.next.late { color: var(--warn); font-weight: 600 }
+.empty { padding: 40px 20px; text-align: center; color: var(--muted) }
+.empty strong { display: block; color: var(--ink); font-size: 15px; margin-bottom: 4px }
+.listhead { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 2.4fr) 150px; gap: 14px; padding: 8px 14px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--sunk) }
+
+/* Ficha */
+.scrim { position: fixed; inset: 0; background: rgba(10, 12, 20, .35); z-index: 20 }
+.ficha { position: fixed; top: 0; right: 0; bottom: 0; width: min(720px, 100%); background: var(--bg); z-index: 21; overflow-y: auto; box-shadow: -8px 0 30px rgba(0,0,0,.18);
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) max(22px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 40px) 22px }
+.ficha-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 14px }
+.ficha-head h2 { font-family: var(--f-display); font-size: 24px; font-weight: 700; margin: 0; line-height: 1.1; text-wrap: balance; overflow-wrap: anywhere }
+.ficha-head .sub { color: var(--muted); margin-top: 4px }
+.saved { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted) }
+section.blk { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 14px }
+section.blk > h3 { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 8px }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 12px }
+.field { min-width: 0 }
+.field textarea { min-height: 70px; resize: vertical }
+.field .lbl { margin-bottom: 4px }
+.span2 { grid-column: span 2 }
+.inline-checks { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; padding-top: 6px }
+.inline-checks label { display: flex; gap: 6px; align-items: center; font-weight: 500 }
+
+.current { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; margin-bottom: 12px }
+.current .when { font-family: var(--f-mono); font-size: 12px; color: var(--muted) }
+.current .txt { white-space: pre-line; font-size: 15px; margin: 3px 0 }
+.current .resp, .hist .resp { font-size: 13px; color: var(--muted); white-space: pre-line }
+.current .resp b, .hist .resp b { color: var(--ink); font-weight: 600 }
+.projs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px }
+.newentry { background: var(--bg); border: 1px dashed var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 10px }
+.toggles { display: flex; flex-wrap: wrap; gap: 6px }
+.toggles button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px 10px; font-size: 12.5px }
+.toggles button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent) }
+details.histwrap { margin-top: 12px }
+details.histwrap summary { cursor: pointer; color: var(--muted); font-weight: 500 }
+.hist { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 0 }
+.hist li { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); color: var(--muted) }
+.hist li .when { font-family: var(--f-mono); font-size: 12px }
+.hist li .txt { white-space: pre-line; color: var(--ink); opacity: .8 }
+
+.contacts { display: grid; gap: 8px }
+.contact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr) auto; gap: 8px; align-items: center }
+.contact input { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 6px 8px; min-width: 0 }
+.contact .x { border: 0; background: transparent; color: var(--muted); padding: 4px 6px; border-radius: 4px }
+.contact .x:hover { color: var(--warn); background: var(--warn-bg) }
+.chead { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+.pecas { display: grid; gap: 6px }
+.peca { display: grid; grid-template-columns: minmax(0, 1fr) 80px auto; gap: 8px }
+.peca input { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 6px 8px; min-width: 0; width: 100% }
+pre.orig { white-space: pre-wrap; font-family: var(--f-mono); font-size: 12px; color: var(--muted); background: var(--bg); padding: 10px; border-radius: 6px; margin: 8px 0 0; overflow-wrap: anywhere }
+.confirm { display: inline-flex; gap: 6px; align-items: center; font-size: 13px }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 999px; font-weight: 500; z-index: 40; max-width: calc(100% - 32px) }
+.modal { position: fixed; inset: 0; display: grid; place-items: center; z-index: 30; background: rgba(10,12,20,.35); padding: 16px }
+.modal .box { background: var(--surface); border-radius: 12px; padding: 18px; width: min(520px, 100%); max-height: 90vh; overflow: auto; display: grid; gap: 12px }
+.modal h3 { margin: 0; font-family: var(--f-display); font-size: 20px }
+.modal textarea { width: 100%; min-height: 140px; font-family: var(--f-mono); font-size: 12px; border: 1px solid var(--line); border-radius: 6px; padding: 8px; background: var(--bg) }
+.projlist { display: grid; gap: 6px }
+.projlist div { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding: 4px 0 }
+.note { color: var(--muted); font-size: 13px }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr) }
+  aside.filters { position: static; display: none }
+  aside.filters.open { display: grid }
+  .filters-toggle { display: inline-flex }
+  .listhead { display: none }
+  .row { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px }
+  .row .loc { grid-column: 1; grid-row: 2; color: var(--muted) }
+  .row .ponto { grid-column: 1 / -1 }
+  .row .st { grid-column: 2; grid-row: 1; justify-items: end }
+}
+@media (max-width: 560px) {
+  .grid2, .grid3 { grid-template-columns: minmax(0, 1fr) }
+  .span2 { grid-column: auto }
+  .contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+  .contact .em { grid-column: 1 / 3 }
+  .chead { display: none }
+  .ficha { padding-left: 16px; padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+  .hist li { grid-template-columns: minmax(0, 1fr) auto }
+  .hist li .when { grid-column: 1 / -1 }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ficha { animation: slide .18s ease-out }
+  @keyframes slide { from { transform: translateX(24px); opacity: .6 } }
+}
+
+/* base (versão independente) */
+html { -webkit-text-size-adjust: 100% }
+body { margin: 0; font-size: 14px }
+img { max-width: 100% }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px) }
+#syncLbl { font-family: var(--f-mono); font-size: 12px }
+.loginwrap { min-height: 100vh; display: grid; place-items: center; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px }
+.loginwrap[hidden] { display: none !important }
+.logincard { width: min(420px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; gap: 14px }
+.logincard h1 { font-size: 24px }
+.logincard input { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 9px 10px }
+.logincard .btn { justify-content: center; padding: 9px 12px }
+.logincard .note:empty { display: none }
+.logincard a { color: var(--accent) }
+</style>
+</head>
+<body>
+
+<div id="login" class="loginwrap" hidden>
+  <form class="logincard" id="loginForm" novalidate>
+    <h1>Programadores Instável<small>Liga a página ao repositório privado onde estão os dados.</small></h1>
+    <div class="field"><label class="lbl" for="lOwner">Utilizador do GitHub</label><input id="lOwner" autocomplete="username" placeholder="ex.: instavel-raquel"></div>
+    <div class="field"><label class="lbl" for="lRepo">Repositório dos dados</label><input id="lRepo" placeholder="programadores-dados"></div>
+    <div class="field"><label class="lbl" for="lToken">Chave de acesso (token)</label><input id="lToken" type="password" autocomplete="current-password" placeholder="github_pat_…"></div>
+    <button class="btn primary" type="submit" id="lBtn">Ligar</button>
+    <p class="note" id="loginMsg" role="alert"></p>
+    <p class="note">A chave fica guardada só neste navegador. Para criar uma: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Fine-grained token</a>, com acesso só ao repositório dos dados e permissão “Contents: Read and write”.</p>
+  </form>
+</div>
+
+
+<div id="app" hidden>
+<div class="wrap">
+  <header class="top">
+    <h1>Programadores Instável<small>Espaços, festivais e programadores para difusão das peças · <span id="syncLbl"></span></small></h1>
+    <div class="actions">
+      <button class="btn filters-toggle" id="btnFilters" type="button">Filtros</button>
+      <button class="btn" id="btnEmails" type="button">Copiar emails</button>
+      <button class="btn" id="btnXlsx" type="button">Descarregar Excel</button>
+      <button class="btn" id="btnProj" type="button">Projetos</button>
+      <button class="btn primary" id="btnNew" type="button">+ Novo espaço</button>
+      <button class="btn ghost" id="btnLogout" type="button">Sair</button>
+    </div>
+  </header>
+
+  <div class="ambito" role="group" aria-label="Âmbito" id="ambito"></div>
+  <div class="statusbar" id="statusbar"></div>
+
+  <div class="layout">
+    <aside class="filters" id="filters">
+      <div class="f"><label for="fq">Pesquisar</label><input type="search" id="fq" placeholder="Nome, pessoa, email, peça…"></div>
+      <div class="f"><label for="ftipo">Natureza da estrutura</label><select id="ftipo"></select></div>
+      <div class="f"><label for="frede">Rede</label><select id="frede"></select></div>
+      <div class="f"><label for="fint">Interesse</label><select id="fint"></select></div>
+      <div class="f" id="wrapReg"><label for="freg">Região</label><select id="freg"></select></div>
+      <div class="f" id="wrapPais"><label for="fpais">País</label><select id="fpais"></select></div>
+      <div class="f"><label for="fproj">Já contactado sobre</label><select id="fproj"></select></div>
+      <div class="f"><label for="fpeca">Já programou ou coproduziu</label><select id="fpeca"></select></div>
+      <div class="f"><span class="lbl">Outros</span>
+        <div class="checks">
+          <label><input type="checkbox" id="fpar"> Nossos parceiros</label>
+          <label><input type="checkbox" id="faloj"> Damos alojamento</label>
+          <label id="wrapFront"><input type="checkbox" id="ffront"> Fronteira (Espanha)</label>
+          <label><input type="checkbox" id="fseguir"> Próximo passo para hoje ou em atraso</label>
+          <label><input type="checkbox" id="fsemmail"> Sem email</label>
+        </div>
+      </div>
+      <button class="btn ghost sm reset" id="btnReset" type="button">Limpar filtros</button>
+    </aside>
+
+    <main class="results">
+      <div class="resbar">
+        <span><span class="n" id="count">0</span> <span id="countLbl">espaços</span></span>
+        <label>Ordenar <select id="sort">
+          <option value="nome">Nome</option>
+          <option value="local">Região / país</option>
+          <option value="estado">Estado</option>
+          <option value="proximo">Próximo passo</option>
+          <option value="atualizado">Atualizado recentemente</option>
+        </select></label>
+      </div>
+      <div class="list" id="list">
+        <div class="empty" id="loading"><strong>A carregar os espaços…</strong>Os contactos nacionais e internacionais aparecem aqui.</div>
+      </div>
+    </main>
+  </div>
+</div>
+
+</div>
+<div id="overlay"></div>
+<div id="toastHost"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(() => {
+const TIPOS = ['Teatro / Cineteatro / Auditório', 'Museu / Galeria / Centro de arte', 'Centro cultural / Associação / Estrutura independente', 'Festival', 'Institucional'];
+const REDES = ['RTCP', 'RPAC'];
+const REGIOES = ['Norte', 'Centro', 'Área Metropolitana de Lisboa', 'Alentejo', 'Algarve', 'Açores', 'Madeira'];
+const ESTADOS = [
+  ['Por contactar', '--s-none'], ['Contactado', '--s-sent'], ['Respondeu', '--s-reply'],
+  ['Em conversa', '--s-talk'], ['Programado', '--s-done'], ['Sem interesse', '--s-no']];
+const ESTADO_COLOR = Object.fromEntries(ESTADOS);
+const INTERESSES = [['Com muito interesse', '--s-done'], ['Com algum interesse', '--s-reply'], ['Sem muito interesse', '--s-no']];
+const INT_COLOR = Object.fromEntries(INTERESSES);
+const IDIOMAS = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Italiano', 'Alemão'];
+const DEFAULT_PROJ = ['Terreiro', 'RARA', 'Palcos Instáveis', 'futura'];
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const sortKey = s => norm(s).replace(/^[^a-z0-9]+/, '');
+const today = () => new Date().toISOString().slice(0, 10);
+const fmtDate = iso => { if (!iso) return ''; const [y, m, d] = iso.slice(0, 10).split('-'); return `${d}/${m}/${y.slice(2)}`; };
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const titleOf = r => (r.tipo === 'Festival' && r.entidade) ? r.entidade : (r.espaco || r.entidade || r.nome || 'Sem nome');
+const subOf = r => { const t = titleOf(r); const o = [r.espaco, r.entidade].filter(x => x && x !== t); return o.join(' · '); };
+const lastEntry = r => (r.historico && r.historico.length) ? r.historico[r.historico.length - 1] : null;
+const whenOf = h => h.data ? fmtDate(h.data) : (h.quando || '');
+
+
+const docs = new Map();
+let projetos = DEFAULT_PROJ.slice();
+let loaded = false;
+let openId = null;
+let draft = null; // working copy of the open ficha
+
+const F_DEFAULT = { ambito: 'Todos', estado: '', tipo: '', rede: '', int: '', regiao: '', pais: '', proj: '', peca: '', par: false, aloj: false, front: false, seguir: false, semmail: false, q: '', sort: 'nome' };
+let f = { ...F_DEFAULT };
+try { const s = JSON.parse(localStorage.getItem('progInstavelFiltros') || 'null'); if (s) f = { ...F_DEFAULT, ...s, q: '' }; } catch (e) {}
+const saveFilters = () => { try { localStorage.setItem('progInstavelFiltros', JSON.stringify(f)); } catch (e) {} };
+
+function toast(msg) {
+  const h = $('#toastHost'); h.innerHTML = `<div class="toast" role="status">${esc(msg)}</div>`;
+  clearTimeout(toast.t); toast.t = setTimeout(() => h.innerHTML = '', 2600);
+}
+
+/* ---------- filtering ---------- */
+function haystack(r) {
+  if (r.__h && r.__hv === r) return r.__h;
+  const parts = [titleOf(r), r.espaco, r.entidade, r.localidade, r.regiao, r.pais, r.notas, r.interno, r.tipo,
+    ...(r.contactos || []).flatMap(c => [c.nome, c.email, c.funcao]),
+    ...(r.pecas || []).map(p => p.peca), ...(r.coproducoes || []).map(p => p.peca), ...(r.historico || []).map(h => h.texto + ' ' + h.resposta)];
+  return norm(parts.join(' '));
+}
+const hayCache = new WeakMap();
+function hay(r) { let h = hayCache.get(r); if (!h) { h = haystack(r); hayCache.set(r, h); } return h; }
+
+function matches(r, skip) {
+  if (skip !== 'ambito' && f.ambito !== 'Todos' && r.ambito !== f.ambito) return false;
+  if (skip !== 'estado' && f.estado && r.estado !== f.estado) return false;
+  if (f.tipo && r.tipo !== f.tipo) return false;
+  if (f.rede && !(r.rede || []).includes(f.rede)) return false;
+  if (f.int && (f.int === 'Sem indicação' ? r.interesse : r.interesse !== f.int)) return false;
+  if (f.regiao && (r.ambito !== 'Nacional' || r.regiao !== f.regiao)) return false;
+  if (f.pais && (r.ambito !== 'Internacional' || r.pais !== f.pais)) return false;
+  if (f.proj && !(r.historico || []).some(h => (h.projetos || []).includes(f.proj))) return false;
+  if (f.peca && ![...(r.pecas || []), ...(r.coproducoes || [])].some(p => norm(p.peca) === norm(f.peca))) return false;
+  if (f.par && !r.parceiro) return false;
+  if (f.aloj && !r.alojamento) return false;
+  if (f.front && !r.fronteira) return false;
+  if (f.seguir && !(r.proximaData && r.proximaData <= today())) return false;
+  if (f.semmail && (r.contactos || []).some(c => c.email)) return false;
+  if (f.q) { const h = hay(r); if (!norm(f.q).split(/\s+/).filter(Boolean).every(t => h.includes(t))) return false; }
+  return true;
+}
+function filtered() {
+  const out = [...docs.entries()].filter(([, r]) => matches(r)).map(([id, r]) => ({ id, r }));
+  const k = f.sort;
+  const est = Object.fromEntries(ESTADOS.map(([e], i) => [e, i]));
+  out.sort((a, b) => {
+    if (k === 'local') return (norm(a.r.ambito === 'Nacional' ? a.r.regiao : a.r.pais) + norm(a.r.localidade)).localeCompare(norm(b.r.ambito === 'Nacional' ? b.r.regiao : b.r.pais) + norm(b.r.localidade)) || norm(titleOf(a.r)).localeCompare(norm(titleOf(b.r)));
+    if (k === 'estado') return (est[a.r.estado] ?? 9) - (est[b.r.estado] ?? 9) || norm(titleOf(a.r)).localeCompare(norm(titleOf(b.r)));
+    if (k === 'proximo') return (a.r.proximaData || '9999').localeCompare(b.r.proximaData || '9999');
+    if (k === 'atualizado') return String(b.r.atualizado || '').localeCompare(String(a.r.atualizado || ''));
+    return sortKey(titleOf(a.r)).localeCompare(sortKey(titleOf(b.r)));
+  });
+  return out;
+}
+
+/* ---------- rendering: controls ---------- */
+function opts(sel, values, all, cur) {
+  sel.innerHTML = `<option value="">${esc(all)}</option>` + values.map(v => `<option${v === cur ? ' selected' : ''}>${esc(v)}</option>`).join('');
+}
+function renderControls() {
+  const all = [...docs.values()];
+  const cnt = a => all.filter(r => a === 'Todos' || r.ambito === a).length;
+  $('#ambito').innerHTML = ['Todos', 'Nacional', 'Internacional'].map(a =>
+    `<button type="button" data-amb="${a}" aria-pressed="${f.ambito === a}">${a}<span class="n">${cnt(a)}</span></button>`).join('');
+  const base = all.filter(r => matches(r, 'estado'));
+  $('#statusbar').innerHTML = ESTADOS.map(([e, c]) => {
+    const n = base.filter(r => r.estado === e).length;
+    return `<button type="button" class="chip" data-est="${esc(e)}" aria-pressed="${f.estado === e}"><span class="dot" style="background:var(${c})"></span>${esc(e)}<span class="n">${n}</span></button>`;
+  }).join('');
+  opts($('#ftipo'), TIPOS, 'Todas', f.tipo);
+  opts($('#frede'), REDES, 'Todas', f.rede);
+  opts($('#fint'), [...INTERESSES.map(i => i[0]), 'Sem indicação'], 'Qualquer', f.int);
+  opts($('#freg'), REGIOES, 'Todas', f.regiao);
+  const paises = [...new Set(all.filter(r => r.ambito === 'Internacional' && r.pais).map(r => r.pais))].sort((a, b) => a.localeCompare(b, 'pt'));
+  opts($('#fpais'), paises, 'Todos', f.pais);
+  opts($('#fproj'), projetos, 'Qualquer projeto', f.proj);
+  const pecasAll = new Map();
+  all.forEach(r => [...(r.pecas || []), ...(r.coproducoes || [])].forEach(p => { if (p.peca) pecasAll.set(norm(p.peca), pecasAll.get(norm(p.peca)) || p.peca); }));
+  opts($('#fpeca'), [...pecasAll.values()].sort((a, b) => a.localeCompare(b, 'pt')), 'Qualquer peça', f.peca);
+  $('#wrapReg').hidden = f.ambito === 'Internacional';
+  $('#wrapPais').hidden = f.ambito === 'Nacional';
+  $('#wrapFront').hidden = f.ambito === 'Nacional';
+  $('#fpar').checked = f.par; $('#faloj').checked = f.aloj; $('#ffront').checked = f.front; $('#fseguir').checked = f.seguir; $('#fsemmail').checked = f.semmail;
+  $('#sort').value = f.sort;
+  if (document.activeElement !== $('#fq')) $('#fq').value = f.q;
+}
+
+function renderList() {
+  if (!loaded) return;
+  const rows = filtered();
+  $('#count').textContent = rows.length;
+  $('#countLbl').textContent = rows.length === 1 ? 'espaço' : 'espaços';
+  if (!docs.size) {
+    $('#list').innerHTML = `<div class="empty"><strong>Ainda não há espaços.</strong>Os contactos dos teus Excels vão ser carregados aqui. Também podes criar um com “+ Novo espaço”.</div>`;
+    return;
+  }
+  if (!rows.length) {
+    $('#list').innerHTML = `<div class="empty"><strong>Nenhum espaço com estes filtros.</strong>Experimenta “Limpar filtros”.</div>`;
+    return;
+  }
+  const t = today();
+  $('#list').innerHTML = `<div class="listhead"><span>Espaço / entidade</span><span>Local</span><span>Ponto de situação</span><span>Estado</span></div>` + rows.map(({ id, r }) => {
+    const h = lastEntry(r);
+    const loc = r.ambito === 'Nacional' ? [r.localidade, r.regiao].filter(Boolean).join(' · ') : [r.localidade, r.pais].filter(Boolean).join(' · ');
+    const tags = [`<span class="tag">${r.ambito === 'Nacional' ? 'PT' : 'INT'}</span>`, `<span class="tag">${esc(r.tipo || 'Sem tipo')}</span>`]
+      .concat((r.rede || []).map(x => `<span class="tag">${esc(x)}</span>`))
+      .concat(r.interesse && INT_COLOR[r.interesse] ? [`<span class="tag int"><span class="dot" style="background:var(${INT_COLOR[r.interesse]})"></span>${esc(r.interesse)}</span>`] : [])
+      .concat(r.parceiro ? ['<span class="tag part">Parceiro</span>'] : [])
+      .concat(r.fronteira ? ['<span class="tag">Fronteira</span>'] : []);
+    const late = r.proximaData && r.proximaData <= t;
+    const next = r.proximoPasso || r.proximaData ? `<span class="next${late ? ' late' : ''}">${r.proximaData ? fmtDate(r.proximaData) + ' · ' : ''}${esc(r.proximoPasso || 'Próximo passo')}</span>` : '';
+    return `<button type="button" class="row" data-id="${esc(id)}"${r.interesse && INT_COLOR[r.interesse] ? ` style="box-shadow: inset 4px 0 0 var(${INT_COLOR[r.interesse]})"` : ''}>
+      <div><div class="name">${esc(titleOf(r))}</div>${subOf(r) ? `<div class="sub">${esc(subOf(r))}</div>` : ''}<div class="tags">${tags.join('')}</div></div>
+      <div class="loc">${esc(loc) || '<span class="sub">—</span>'}</div>
+      <div class="ponto">${h ? `<div class="txt"><span class="when">${esc(whenOf(h))}</span>${esc(h.texto)}${h.resposta ? ' → ' + esc(h.resposta) : ''}</div>` : '<span class="none">Ainda sem contactos</span>'}</div>
+      <div class="st"><span class="pill"><span class="dot" style="background:var(${ESTADO_COLOR[r.estado] || '--s-none'})"></span>${esc(r.estado || 'Por contactar')}</span>${next}</div>
+    </button>`;
+  }).join('');
+}
+function renderAll() { renderControls(); renderList(); if (openId && !draftDirtyFocus()) renderFicha(); }
+function draftDirtyFocus() { const o = $('#overlay'); return o.contains(document.activeElement) && document.activeElement !== o; }
+
+/* ---------- saving ---------- */
+const saveTimers = new Map(), inflight = new Map(), queued = new Map();
+function scheduleSave(id, rec, delay = 700) {
+  rec.atualizado = new Date().toISOString();
+  docs.set(id, rec);
+  markSaving();
+  clearTimeout(saveTimers.get(id));
+  saveTimers.set(id, setTimeout(() => flush(id), delay));
+}
+async function flush(id) { if (!docs.has(id)) return; dirty.add(id); schedulePush(); }
+
+/* ---------- ficha ---------- */
+function openFicha(id) { openId = id; draft = JSON.parse(JSON.stringify(docs.get(id))); draft.__showNew = false; renderFicha(); document.body.style.overflow = 'hidden'; }
+function closeFicha() { if (openId) { clearTimeout(saveTimers.get(openId)); flush(openId); } openId = null; draft = null; $('#overlay').innerHTML = ''; document.body.style.overflow = ''; renderList(); }
+function commit(rerender) {
+  const { __showNew, __editing, __confirmDel, ...clean } = draft;
+  scheduleSave(openId, clean);
+  renderControls(); renderList();
+  if (rerender) renderFicha(true);
+}
+
+function inp(field, label, type = 'text', cls = '') {
+  const v = draft[field] ?? '';
+  return `<div class="field ${cls}"><label class="lbl" for="d_${field}">${label}</label><input id="d_${field}" data-f="${field}" type="${type}" value="${esc(v)}"></div>`;
+}
+function sel(field, label, values, cls = '') {
+  const v = draft[field] ?? '';
+  return `<div class="field ${cls}"><label class="lbl" for="d_${field}">${label}</label><select id="d_${field}" data-f="${field}">${values.includes(v) || !v ? '' : `<option>${esc(v)}</option>`}<option value=""${!v ? ' selected' : ''}>—</option>${values.map(x => `<option${x === v ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select></div>`;
+}
+function area(field, label, cls = '') {
+  return `<div class="field ${cls}"><label class="lbl" for="d_${field}">${label}</label><textarea id="d_${field}" data-f="${field}">${esc(draft[field] || '')}</textarea></div>`;
+}
+
+function renderFicha(keepScroll) {
+  if (!openId || !draft) return;
+  const fresh = docs.get(openId);
+  if (!fresh) { closeFicha(); return; }
+  const r = draft;
+  const host = $('#overlay');
+  const prevScroll = host.querySelector('.ficha')?.scrollTop || 0;
+  const hist = r.historico || [];
+  const cur = hist[hist.length - 1];
+  const older = hist.slice(0, -1).reverse();
+  const isNac = r.ambito === 'Nacional';
+  const entryHtml = (h, i, big) => {
+    const editing = r.__editing === h.id;
+    if (editing) return `<div class="newentry" data-edit="${esc(h.id)}">
+      <div class="grid2"><div class="field"><label class="lbl" for="e_data">Data</label><input id="e_data" type="date" value="${esc(h.data || '')}"></div>
+      <div class="field"><label class="lbl" for="e_quando">Ou texto da data</label><input id="e_quando" value="${esc(h.data ? '' : h.quando || '')}"></div></div>
+      <div class="field"><label class="lbl" for="e_txt">O que foi feito</label><textarea id="e_txt">${esc(h.texto)}</textarea></div>
+      <div class="field"><label class="lbl" for="e_resp">Resposta</label><textarea id="e_resp">${esc(h.resposta)}</textarea></div>
+      <div class="toggles" data-ptoggles="edit">${projetos.map(p => `<button type="button" data-p="${esc(p)}" aria-pressed="${(h.projetos || []).includes(p)}">${esc(p)}</button>`).join('')}</div>
+      <div class="actions"><button class="btn primary sm" data-act="saveEdit" type="button">Guardar</button><button class="btn ghost sm" data-act="cancelEdit" type="button">Cancelar</button>
+      <span class="confirm" style="margin-left:auto">${r.__confirmDel === h.id ? `Apagar esta entrada? <button class="btn danger sm" data-act="delEntry" type="button">Apagar</button><button class="btn ghost sm" data-act="noDel" type="button">Não</button>` : `<button class="btn ghost sm danger" data-act="askDel" type="button">Apagar entrada</button>`}</span></div>
+    </div>`;
+    const pj = (h.projetos || []).length ? `<div class="projs">${h.projetos.map(p => `<span class="tag">${esc(p)}</span>`).join('')}</div>` : '';
+    if (big) return `<div class="current"><div class="when">${esc(whenOf(h))}${h.origem === 'Excel' ? ' · do Excel' : ''}</div><div class="txt">${esc(h.texto)}</div>${h.resposta ? `<div class="resp"><b>Resposta:</b> ${esc(h.resposta)}</div>` : ''}${pj}
+      <div style="margin-top:6px"><button class="btn ghost sm" data-act="edit" data-hid="${esc(h.id)}" type="button">Editar</button></div></div>`;
+    return `<li><span class="when">${esc(whenOf(h))}</span><div><div class="txt">${esc(h.texto)}</div>${h.resposta ? `<div class="resp"><b>Resposta:</b> ${esc(h.resposta)}</div>` : ''}${pj}</div><button class="btn ghost sm" data-act="edit" data-hid="${esc(h.id)}" type="button">Editar</button></li>`;
+  };
+
+  host.innerHTML = `<div class="scrim" data-act="close"></div>
+  <div class="ficha" role="dialog" aria-modal="true" aria-label="${esc(titleOf(r))}">
+    <div class="ficha-head">
+      <div><h2>${esc(titleOf(r))}</h2><div class="sub">${esc(subOf(r))}</div></div>
+      <div style="display:grid;justify-items:end;gap:6px"><button class="btn" data-act="close" type="button">Fechar</button><span class="saved" id="savedLbl"></span></div>
+    </div>
+
+    <section class="blk">
+      <h3>Ponto de situação <button class="btn sm${r.__showNew ? '' : ' primary'}" data-act="toggleNew" type="button">${r.__showNew ? 'Cancelar' : 'Atualizar ponto de situação'}</button></h3>
+      ${r.__showNew ? `<div class="newentry" style="margin-bottom:12px">
+        <div class="grid2"><div class="field"><label class="lbl" for="n_data">Data</label><input id="n_data" type="date" value="${today()}"></div>
+        <div class="field"><label class="lbl" for="n_estado">Mudar estado para</label><select id="n_estado">${ESTADOS.map(([e]) => `<option${e === (r.estado === 'Por contactar' ? 'Contactado' : r.estado) ? ' selected' : ''}>${esc(e)}</option>`).join('')}</select></div></div>
+        <div class="field"><label class="lbl" for="n_txt">O que foi feito</label><textarea id="n_txt" placeholder="Ex.: Enviado dossier do Terreiro à Leonor"></textarea></div>
+        <div class="field"><label class="lbl" for="n_resp">Resposta (se houver)</label><textarea id="n_resp" style="min-height:44px"></textarea></div>
+        <div><span class="lbl">Projetos</span><div class="toggles" data-ptoggles="new">${projetos.map(p => `<button type="button" data-p="${esc(p)}" aria-pressed="false">${esc(p)}</button>`).join('')}</div></div>
+        <div class="actions"><button class="btn primary" data-act="addEntry" type="button">Guardar ponto de situação</button></div>
+      </div>` : ''}
+      ${cur ? entryHtml(cur, hist.length - 1, true) : '<p class="note">Ainda sem contactos registados.</p>'}
+      ${older.length ? `<details class="histwrap"${older.some(h => h.id === r.__editing) ? ' open' : ''}><summary>Histórico anterior (${older.length})</summary><ul class="hist">${older.map(h => r.__editing === h.id ? `<li style="display:block">${entryHtml(h)}</li>` : entryHtml(h)).join('')}</ul></details>` : ''}
+    </section>
+
+    <section class="blk">
+      <h3>Estado e próximo passo</h3>
+      <div class="grid2">
+        ${sel('estado', 'Estado', ESTADOS.map(e => e[0]))}
+        ${sel('interesse', 'Interesse', INTERESSES.map(i => i[0]))}
+        ${inp('proximoPasso', 'Próximo passo', 'text')}
+        ${inp('proximaData', 'Data', 'date')}
+      </div>
+    </section>
+
+    <section class="blk">
+      <h3>Contactos <button class="btn sm" data-act="addContact" type="button">+ Contacto</button></h3>
+      <div class="contacts">
+        <div class="contact chead"><span>Função</span><span>Nome</span><span>Email</span><span></span></div>
+        ${(r.contactos || []).map((c, i) => `<div class="contact">
+          <input aria-label="Função" placeholder="Função" data-c="${i}" data-k="funcao" value="${esc(c.funcao)}">
+          <input aria-label="Nome" placeholder="Nome" data-c="${i}" data-k="nome" value="${esc(c.nome)}">
+          <input class="em" aria-label="Email" placeholder="email@…" type="email" data-c="${i}" data-k="email" value="${esc(c.email)}">
+          <button class="x" type="button" data-act="delContact" data-i="${i}" aria-label="Remover contacto">✕</button></div>`).join('') || '<p class="note">Sem contactos.</p>'}
+      </div>
+      <div class="grid2" style="margin-top:12px">${inp('telefone', 'Telefone geral')}${inp('site', 'Site', 'url')}</div>
+    </section>
+
+    <section class="blk">
+      <h3>Identificação</h3>
+      <div class="grid2">
+        ${sel('ambito', 'Âmbito', ['Nacional', 'Internacional'])}
+        ${sel('tipo', 'Natureza da estrutura', TIPOS)}
+        ${inp('espaco', 'Espaço (onde acolhe)')}
+        ${inp('entidade', 'Entidade (quem programa)')}
+        ${inp('localidade', 'Localidade')}
+        ${isNac ? sel('regiao', 'Região', REGIOES) : inp('pais', 'País')}
+        ${isNac ? '' : sel('idioma', 'Idioma de contacto', IDIOMAS)}
+        <div class="field ${isNac ? '' : ''}"><span class="lbl">Rede</span><div class="inline-checks">${REDES.map(x => `<label><input type="checkbox" data-rede="${x}"${(r.rede || []).includes(x) ? ' checked' : ''}> ${x}</label>`).join('')}</div></div>
+      </div>
+      <div class="inline-checks" style="margin-top:10px">
+        <label><input type="checkbox" data-b="parceiro"${r.parceiro ? ' checked' : ''}> Nosso parceiro</label>
+        <label><input type="checkbox" data-b="alojamento"${r.alojamento ? ' checked' : ''}> Damos alojamento</label>
+        ${isNac ? '' : `<label><input type="checkbox" data-b="fronteira"${r.fronteira ? ' checked' : ''}> Fronteira</label>`}
+      </div>
+    </section>
+
+    <section class="blk">
+      <h3>Peças programadas <button class="btn sm" data-act="addPeca" type="button">+ Peça</button></h3>
+      <div class="pecas">${(r.pecas || []).map((p, i) => `<div class="peca"><input aria-label="Peça" data-p="${i}" data-k="peca" value="${esc(p.peca)}"><input aria-label="Ano" data-p="${i}" data-k="ano" value="${esc(p.ano)}" inputmode="numeric" placeholder="Ano"><button class="btn ghost sm" type="button" data-act="delPeca" data-i="${i}" aria-label="Remover peça">✕</button></div>`).join('') || '<p class="note">Nenhuma peça registada.</p>'}</div>
+    </section>
+
+    <section class="blk">
+      <h3>Peças coproduzidas <button class="btn sm" data-act="addCop" type="button">+ Peça</button></h3>
+      <div class="pecas">${(r.coproducoes || []).map((p, i) => `<div class="peca"><input aria-label="Peça coproduzida" data-q="${i}" data-k="peca" value="${esc(p.peca)}"><input aria-label="Ano" data-q="${i}" data-k="ano" value="${esc(p.ano)}" inputmode="numeric" placeholder="Ano"><button class="btn ghost sm" type="button" data-act="delCop" data-i="${i}" aria-label="Remover coprodução">✕</button></div>`).join('') || '<p class="note">Nenhuma coprodução registada.</p>'}</div>
+    </section>
+
+    <section class="blk">
+      <h3>Notas</h3>
+      <div class="grid2">${area('notas', 'Observações', 'span2')}${area('interno', 'Interno', 'span2')}</div>
+      ${r.original ? `<details style="margin-top:10px"><summary class="note" style="cursor:pointer">Texto original do Excel (programador / emails)</summary><pre class="orig">${esc(r.original)}</pre></details>` : ''}
+    </section>
+
+    <div class="actions" style="justify-content:space-between">
+      <span class="note">Origem: ${esc(r.origem || 'criado aqui')}</span>
+      <span class="confirm">${r.__confirmDel === '__doc' ? `Apagar este espaço de vez? <button class="btn danger sm" data-act="delDoc" type="button">Apagar</button><button class="btn ghost sm" data-act="noDel" type="button">Não</button>` : `<button class="btn ghost sm danger" data-act="askDelDoc" type="button">Apagar espaço</button>`}</span>
+    </div>
+  </div>`;
+  const fi = host.querySelector('.ficha');
+  if (keepScroll) fi.scrollTop = prevScroll;
+}
+
+/* ---------- ficha events ---------- */
+$('#overlay').addEventListener('input', e => {
+  if (!draft) return;
+  const t = e.target;
+  if (t.dataset.f) { draft[t.dataset.f] = t.value; commit(false); }
+  else if (t.dataset.c !== undefined) { draft.contactos[+t.dataset.c][t.dataset.k] = t.value.trim() === '' ? '' : (t.dataset.k === 'email' ? t.value.trim() : t.value); commit(false); }
+  else if (t.dataset.p !== undefined && t.tagName === 'INPUT') { draft.pecas[+t.dataset.p][t.dataset.k] = t.value; commit(false); }
+  else if (t.dataset.q !== undefined) { draft.coproducoes[+t.dataset.q][t.dataset.k] = t.value; commit(false); }
+});
+$('#overlay').addEventListener('change', e => {
+  if (!draft) return;
+  const t = e.target;
+  if ((t.dataset.p !== undefined || t.dataset.q !== undefined) && t.tagName === 'INPUT' && t.dataset.k === 'peca') {
+    const m = t.value.match(/^(.*?)\s*\((\d{4})\)\s*$/);
+    if (m) { const list = t.dataset.p !== undefined ? draft.pecas : draft.coproducoes; const it = list[+(t.dataset.p ?? t.dataset.q)]; it.peca = m[1].trim(); it.ano = m[2]; commit(true); }
+    return;
+  }
+  if (t.dataset.f === 'ambito' || t.dataset.f === 'tipo' || t.dataset.f === 'espaco' || t.dataset.f === 'entidade') { draft[t.dataset.f] = t.value; commit(true); }
+  else if (t.dataset.rede) { const s = new Set(draft.rede || []); t.checked ? s.add(t.dataset.rede) : s.delete(t.dataset.rede); draft.rede = [...s]; commit(false); }
+  else if (t.dataset.b) { draft[t.dataset.b] = t.checked; commit(false); }
+});
+$('#overlay').addEventListener('click', e => {
+  const b = e.target.closest('[data-act], .toggles button'); if (!b) return;
+  if (b.matches('.toggles button')) { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); return; }
+  const a = b.dataset.act;
+  if (a === 'close') return closeFicha();
+  if (!draft) return;
+  const pressed = sel => [...$('#overlay').querySelectorAll(`[data-ptoggles="${sel}"] button[aria-pressed="true"]`)].map(x => x.dataset.p);
+  if (a === 'toggleNew') { draft.__showNew = !draft.__showNew; renderFicha(true); if (draft.__showNew) setTimeout(() => $('#n_txt')?.focus(), 0); }
+  else if (a === 'addEntry') {
+    const txt = $('#n_txt').value.trim(), resp = $('#n_resp').value.trim();
+    if (!txt && !resp) { toast('Escreve o que foi feito antes de guardar.'); $('#n_txt').focus(); return; }
+    draft.historico = draft.historico || [];
+    draft.historico.push({ id: uid('h'), data: $('#n_data').value || today(), quando: '', texto: txt, resposta: resp, projetos: pressed('new'), origem: 'Plataforma' });
+    draft.estado = $('#n_estado').value;
+    draft.__showNew = false; commit(true); toast('Ponto de situação atualizado');
+  }
+  else if (a === 'edit') { draft.__editing = b.dataset.hid; draft.__confirmDel = null; renderFicha(true); }
+  else if (a === 'cancelEdit') { draft.__editing = null; renderFicha(true); }
+  else if (a === 'saveEdit') {
+    const h = draft.historico.find(x => x.id === draft.__editing); if (!h) return;
+    h.data = $('#e_data').value; h.quando = h.data ? '' : $('#e_quando').value.trim();
+    h.texto = $('#e_txt').value.trim(); h.resposta = $('#e_resp').value.trim(); h.projetos = pressed('edit');
+    draft.__editing = null; commit(true);
+  }
+  else if (a === 'askDel') { draft.__confirmDel = draft.__editing; renderFicha(true); }
+  else if (a === 'noDel') { draft.__confirmDel = null; renderFicha(true); }
+  else if (a === 'delEntry') { draft.historico = draft.historico.filter(x => x.id !== draft.__editing); draft.__editing = null; draft.__confirmDel = null; commit(true); }
+  else if (a === 'addContact') { draft.contactos = draft.contactos || []; draft.contactos.push({ id: uid('c'), funcao: '', nome: '', email: '', telefone: '' }); commit(true); const ins = $('#overlay').querySelectorAll('.contact input[data-k="funcao"]'); ins[ins.length - 1]?.focus(); }
+  else if (a === 'delContact') { draft.contactos.splice(+b.dataset.i, 1); commit(true); }
+  else if (a === 'addPeca') { draft.pecas = draft.pecas || []; draft.pecas.push({ peca: '', ano: '' }); commit(true); const ins = $('#overlay').querySelectorAll('.peca input[data-k="peca"]'); ins[ins.length - 1]?.focus(); }
+  else if (a === 'delPeca') { draft.pecas.splice(+b.dataset.i, 1); commit(true); }
+  else if (a === 'addCop') { draft.coproducoes = draft.coproducoes || []; draft.coproducoes.push({ peca: '', ano: '' }); commit(true); const ins = $('#overlay').querySelectorAll('.peca input[data-q][data-k="peca"]'); ins[ins.length - 1]?.focus(); }
+  else if (a === 'delCop') { draft.coproducoes.splice(+b.dataset.i, 1); commit(true); }
+  else if (a === 'askDelDoc') { draft.__confirmDel = '__doc'; renderFicha(true); }
+  else if (a === 'delDoc') {
+    const id = openId; clearTimeout(saveTimers.get(id));
+    docs.delete(id); openId = null; draft = null; $('#overlay').innerHTML = ''; document.body.style.overflow = '';
+    renderAll();
+    deleted.add(id); dirty.delete(id); schedulePush(500); toast('Espaço apagado');
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if ($('.modal')) { $('#modalHost')?.remove(); } else if (openId) closeFicha(); } });
+
+/* ---------- list & filter events ---------- */
+$('#list').addEventListener('click', e => { const r = e.target.closest('.row'); if (r) openFicha(r.dataset.id); });
+$('#ambito').addEventListener('click', e => { const b = e.target.closest('[data-amb]'); if (!b) return; f.ambito = b.dataset.amb; if (f.ambito === 'Internacional') f.regiao = ''; if (f.ambito === 'Nacional') { f.pais = ''; f.front = false; } saveFilters(); renderControls(); renderList(); });
+$('#statusbar').addEventListener('click', e => { const b = e.target.closest('[data-est]'); if (!b) return; f.estado = f.estado === b.dataset.est ? '' : b.dataset.est; saveFilters(); renderControls(); renderList(); });
+const bindSel = (id, key) => $(id).addEventListener('change', e => { f[key] = e.target.value; saveFilters(); renderControls(); renderList(); });
+bindSel('#ftipo', 'tipo'); bindSel('#frede', 'rede'); bindSel('#fint', 'int'); bindSel('#freg', 'regiao'); bindSel('#fpais', 'pais'); bindSel('#fproj', 'proj'); bindSel('#fpeca', 'peca'); bindSel('#sort', 'sort');
+const bindChk = (id, key) => $(id).addEventListener('change', e => { f[key] = e.target.checked; saveFilters(); renderControls(); renderList(); });
+bindChk('#fpar', 'par'); bindChk('#faloj', 'aloj'); bindChk('#ffront', 'front'); bindChk('#fseguir', 'seguir'); bindChk('#fsemmail', 'semmail');
+let qT; $('#fq').addEventListener('input', e => { clearTimeout(qT); qT = setTimeout(() => { f.q = e.target.value; renderControls(); renderList(); }, 150); });
+$('#btnReset').addEventListener('click', () => { f = { ...F_DEFAULT, ambito: f.ambito, sort: f.sort }; saveFilters(); renderControls(); renderList(); });
+$('#btnFilters').addEventListener('click', () => $('#filters').classList.toggle('open'));
+
+$('#btnNew').addEventListener('click', () => {
+  if (!gh) { toast('Liga-te ao GitHub primeiro.'); return; }
+  const id = uid('novo-');
+  const amb = f.ambito === 'Internacional' ? 'Internacional' : 'Nacional';
+  const rec = { ambito: amb, origem: 'Criado na plataforma', entidade: '', espaco: 'Novo espaço', tipo: f.tipo || TIPOS[0], rede: [], localidade: '', regiao: '', pais: amb === 'Nacional' ? 'Portugal' : '', idioma: amb === 'Nacional' ? 'Português' : 'Inglês', fronteira: false, contactos: [{ id: uid('c'), funcao: '', nome: '', email: '', telefone: '' }], telefone: '', site: '', alojamento: false, parceiro: false, pecas: [], notas: '', interno: '', historico: [], estado: 'Por contactar', proximoPasso: '', proximaData: '', original: '' };
+  scheduleSave(id, rec, 0); renderAll(); openFicha(id);
+  setTimeout(() => { const i = $('#d_espaco'); if (i) { i.focus(); i.select(); } }, 0);
+});
+
+function modal(html) {
+  $('#modalHost')?.remove();
+  const m = document.createElement('div'); m.id = 'modalHost'; m.className = 'modal';
+  m.innerHTML = `<div class="box" role="dialog" aria-modal="true">${html}</div>`;
+  m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.remove(); });
+  document.body.appendChild(m); return m;
+}
+$('#btnEmails').addEventListener('click', () => {
+  const rows = filtered();
+  const set = new Set(); rows.forEach(({ r }) => (r.contactos || []).forEach(c => c.email && set.add(c.email)));
+  const list = [...set].join(', ');
+  const m = modal(`<h3>Emails da seleção</h3><p class="note">${set.size} emails de ${rows.length} espaços, com os filtros atuais. Cola no campo “Bcc” do Gmail.</p>
+    <textarea id="emailsTxt" readonly>${esc(list)}</textarea>
+    <div class="actions"><button class="btn primary" id="copyEm" type="button">Copiar</button><button class="btn ghost" data-close type="button">Fechar</button></div>`);
+  m.querySelector('#copyEm').addEventListener('click', () => {
+    const ta = m.querySelector('#emailsTxt');
+    navigator.clipboard.writeText(list).then(() => toast('Emails copiados'), () => { ta.focus(); ta.select(); toast('Seleciona e copia com Ctrl/Cmd + C'); });
+  });
+});
+$('#btnProj').addEventListener('click', () => {
+  const draw = m => {
+    m.querySelector('.box').innerHTML = `<h3>Projetos</h3><p class="note">Os projetos que podes associar a cada ponto de situação e usar no filtro “Já contactado sobre”.</p>
+      <div class="projlist">${projetos.map((p, i) => `<div><span>${esc(p)}</span><button class="btn ghost sm danger" data-del="${i}" type="button">Remover</button></div>`).join('')}</div>
+      <form id="projForm" class="actions"><input id="projNew" placeholder="Novo projeto" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:6px;padding:7px 9px;background:var(--surface)"><button class="btn primary" type="submit">Adicionar</button></form>
+      <div class="actions"><button class="btn ghost" data-close type="button">Fechar</button></div>`;
+    m.querySelector('#projForm').addEventListener('submit', ev => { ev.preventDefault(); const v = m.querySelector('#projNew').value.trim(); if (v && !projetos.includes(v)) { projetos.push(v); saveProj(); draw(m); m.querySelector('#projNew').focus(); } });
+    m.querySelectorAll('[data-del]').forEach(x => x.addEventListener('click', () => { projetos.splice(+x.dataset.del, 1); saveProj(); draw(m); }));
+  };
+  draw(modal(''));
+});
+function saveProj() { renderControls(); cfgDirty = true; schedulePush(); }
+
+renderControls();
+/* ---------- boot: dados num repositório privado do GitHub ---------- */
+const GH_KEY = 'progInstavelGitHub';
+let gh = null;            // { owner, repo, branch, path, token }
+let sha = null;           // versão atual do ficheiro no GitHub
+let lastLoad = 0;
+const dirty = new Set(), deleted = new Set();
+let cfgDirty = false, pushTimer = null, pushing = false, pushAgain = false;
+
+function setSync(t) { const a = $('#syncLbl'); if (a) a.textContent = t; const b = $('#savedLbl'); if (b) b.textContent = t; }
+function markSaving() { setSync('Por guardar…'); }
+function markSaved() { setSync('Guardado no GitHub'); }
+function pending() { return dirty.size || deleted.size || cfgDirty; }
+
+function readCreds() { try { return JSON.parse(localStorage.getItem(GH_KEY) || 'null'); } catch (e) { return null; } }
+function writeCreds(c) { try { c ? localStorage.setItem(GH_KEY, JSON.stringify(c)) : localStorage.removeItem(GH_KEY); } catch (e) {} }
+
+function api(method, url, body, accept) {
+  return fetch(url, {
+    method, cache: 'no-store',
+    headers: { Authorization: `Bearer ${gh.token}`, Accept: accept || 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    body: body ? JSON.stringify(body) : undefined
+  });
+}
+const contentsUrl = () => `https://api.github.com/repos/${encodeURIComponent(gh.owner)}/${encodeURIComponent(gh.repo)}/contents/${gh.path.split('/').map(encodeURIComponent).join('/')}`;
+function b64(text) {
+  const bytes = new TextEncoder().encode(text); let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+async function readRemote() {
+  const meta = await api('GET', contentsUrl() + '?ref=' + encodeURIComponent(gh.branch));
+  if (meta.status === 404) return { sha: null, obj: null };
+  if (!meta.ok) throw Object.assign(new Error('meta ' + meta.status), { status: meta.status });
+  const m = await meta.json();
+  const raw = await api('GET', contentsUrl() + '?ref=' + encodeURIComponent(gh.branch), null, 'application/vnd.github.raw+json');
+  if (!raw.ok) throw Object.assign(new Error('raw ' + raw.status), { status: raw.status });
+  const text = await raw.text();
+  return { sha: m.sha, obj: text.trim() ? JSON.parse(text) : null };
+}
+function serialize() {
+  const ids = [...docs.keys()].sort();
+  return '{\n"formato": "programadores-instavel",\n"versao": 1,\n"atualizado": ' + JSON.stringify(new Date().toISOString()) +
+    ',\n"config": ' + JSON.stringify({ projetos }) + ',\n"espacos": [\n' +
+    ids.map(id => JSON.stringify({ id, data: docs.get(id) })).join(',\n') + '\n]\n}\n';
+}
+function applyRemote(obj, keepIds, keepDeleted, keepCfg) {
+  const remote = new Map(((obj && obj.espacos) || []).map(r => [r.id, r.data]));
+  for (const id of [...docs.keys()]) if (!remote.has(id) && !keepIds.has(id)) docs.delete(id);
+  for (const [id, d] of remote) { if (keepDeleted.has(id)) { docs.delete(id); continue; } if (!keepIds.has(id)) docs.set(id, d); }
+  if (!keepCfg && obj && obj.config && Array.isArray(obj.config.projetos)) projetos = obj.config.projetos.slice();
+}
+function commitMessage(d, del) {
+  const parts = [];
+  if (d.length === 1 && docs.get(d[0])) parts.push('Atualiza ' + titleOf(docs.get(d[0])));
+  else if (d.length) parts.push(`Atualiza ${d.length} espaços`);
+  if (del.length) parts.push(`apaga ${del.length} espaço${del.length > 1 ? 's' : ''}`);
+  if (!parts.length) parts.push('Atualiza projetos');
+  return parts.join(', ');
+}
+function schedulePush(delay = 2500) { markSaving(); clearTimeout(pushTimer); pushTimer = setTimeout(pushChanges, delay); }
+async function pushChanges() {
+  clearTimeout(pushTimer);
+  if (!gh || !pending()) return;
+  if (pushing) { pushAgain = true; return; }
+  pushing = true; setSync('A guardar…');
+  const d = [...dirty], del = [...deleted], c = cfgDirty;
+  dirty.clear(); deleted.clear(); cfgDirty = false;
+  try {
+    let done = false;
+    for (let attempt = 0; attempt < 3 && !done; attempt++) {
+      const r = await api('PUT', contentsUrl(), { message: commitMessage(d, del), content: b64(serialize()), branch: gh.branch, ...(sha ? { sha } : {}) });
+      if (r.ok) { sha = (await r.json()).content.sha; done = true; break; }
+      if (r.status === 409 || r.status === 422) { const rem = await readRemote(); sha = rem.sha; applyRemote(rem.obj, new Set(d), new Set(del), c); continue; }
+      throw Object.assign(new Error('put ' + r.status), { status: r.status });
+    }
+    if (!done) throw new Error('conflito');
+    lastLoad = Date.now(); markSaved();
+  } catch (e) {
+    console.error(e);
+    d.forEach(x => dirty.add(x)); del.forEach(x => deleted.add(x)); if (c) cfgDirty = true;
+    setSync('Não guardado');
+    toast(e.status === 401 || e.status === 403 ? 'A chave do GitHub já não é válida. Carrega em “Sair” e liga-te de novo com uma chave nova.' : 'Não foi possível guardar no GitHub. Vou tentar outra vez dentro de momentos.');
+    if (!(e.status === 401 || e.status === 403)) setTimeout(pushChanges, 15000);
+  } finally {
+    pushing = false;
+    if (pushAgain) { pushAgain = false; pushChanges(); }
+  }
+}
+
+async function loadAll(quiet) {
+  if (!quiet) $('#list').innerHTML = `<div class="empty"><strong>A carregar os espaços…</strong>Os contactos nacionais e internacionais aparecem aqui.</div>`;
+  const rem = await readRemote();
+  if (rem.sha && rem.sha === sha && quiet) return;
+  sha = rem.sha;
+  applyRemote(rem.obj, new Set(dirty), new Set(deleted), cfgDirty);
+  loaded = true; lastLoad = Date.now();
+  renderControls(); renderList();
+  if (openId && !draftDirtyFocus() && docs.has(openId)) { const keep = { __showNew: draft.__showNew, __editing: draft.__editing, __confirmDel: draft.__confirmDel }; draft = { ...JSON.parse(JSON.stringify(docs.get(openId))), ...keep }; renderFicha(true); }
+  if (!docs.size) $('#list').innerHTML = `<div class="empty"><strong>Ainda não há espaços.</strong>Confirma que o ficheiro <b>${esc(gh.path)}</b> está no repositório <b>${esc(gh.repo)}</b>. Também podes criar um com “+ Novo espaço”.</div>`;
+  markSaved();
+}
+
+function showLogin(msg) { $('#app').hidden = true; $('#login').hidden = false; $('#loginMsg').textContent = msg || ''; }
+function showApp() { $('#login').hidden = true; $('#app').hidden = false; }
+
+async function connect(creds) {
+  gh = { ...creds };
+  const r = await api('GET', `https://api.github.com/repos/${encodeURIComponent(gh.owner)}/${encodeURIComponent(gh.repo)}`);
+  if (r.status === 401) throw new Error('A chave não é válida. Confirma que a copiaste inteira.');
+  if (r.status === 404 || r.status === 403) throw new Error(`Não encontrei o repositório “${gh.owner}/${gh.repo}”, ou a chave não tem acesso a ele.`);
+  if (!r.ok) throw new Error('O GitHub não respondeu. Tenta outra vez dentro de momentos.');
+  const info = await r.json();
+  gh.branch = info.default_branch || 'main';
+  showApp();
+  await loadAll();
+}
+
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const creds = { owner: $('#lOwner').value.trim(), repo: $('#lRepo').value.trim() || 'programadores-dados', path: 'dados.json', token: $('#lToken').value.trim() };
+  if (!creds.owner || !creds.token) { $('#loginMsg').textContent = 'Preenche o utilizador do GitHub e a chave.'; return; }
+  $('#lBtn').disabled = true; $('#loginMsg').textContent = 'A ligar ao GitHub…';
+  try { await connect(creds); writeCreds({ owner: creds.owner, repo: creds.repo, path: creds.path, token: creds.token }); $('#lToken').value = ''; }
+  catch (err) { gh = null; showLogin(err.message); }
+  finally { $('#lBtn').disabled = false; }
+});
+$('#btnLogout').addEventListener('click', async () => {
+  if (pending()) await pushChanges();
+  if (openId) closeFicha();
+  writeCreds(null); gh = null; sha = null; docs.clear(); loaded = false;
+  showLogin('A chave foi apagada deste navegador.');
+});
+
+/* Descarregar Excel (lista filtrada) */
+$('#btnXlsx').addEventListener('click', () => {
+  if (!window.XLSX) { toast('O módulo de Excel não carregou. Verifica a ligação e recarrega a página.'); return; }
+  const rows = filtered();
+  const espacos = rows.map(({ r }) => {
+    const h = lastEntry(r);
+    return {
+      'Nome': titleOf(r), 'Âmbito': r.ambito, 'Natureza': r.tipo, 'Rede': (r.rede || []).join(', '),
+      'Espaço': r.espaco, 'Entidade': r.entidade, 'Localidade': r.localidade,
+      'Região / País': r.ambito === 'Nacional' ? r.regiao : r.pais, 'Fronteira': r.fronteira ? 'Sim' : '',
+      'Parceiro': r.parceiro ? 'Sim' : '', 'Damos alojamento': r.alojamento ? 'Sim' : '',
+      'Estado': r.estado, 'Interesse': r.interesse || '', 'Próximo passo': r.proximoPasso || '', 'Data próximo passo': r.proximaData || '',
+      'Ponto de situação': h ? `${whenOf(h)} — ${h.texto}${h.resposta ? ' → ' + h.resposta : ''}` : '',
+      'Contactos': (r.contactos || []).map(c => [c.funcao, c.nome, c.email].filter(Boolean).join(' · ')).join('\n'),
+      'Telefone': r.telefone, 'Site': r.site,
+      'Peças programadas': (r.pecas || []).map(p => p.peca + (p.ano ? ` (${p.ano})` : '')).join('\n'),
+      'Peças coproduzidas': (r.coproducoes || []).map(p => p.peca + (p.ano ? ` (${p.ano})` : '')).join('\n'),
+      'Observações': r.notas, 'Interno': r.interno
+    };
+  });
+  const contactos = [];
+  rows.forEach(({ r }) => (r.contactos || []).forEach(c => contactos.push({ 'Espaço / entidade': titleOf(r), 'Âmbito': r.ambito, 'Função': c.funcao, 'Nome': c.nome, 'Email': c.email, 'Região / País': r.ambito === 'Nacional' ? r.regiao : r.pais, 'Estado': r.estado })));
+  const historico = [];
+  rows.forEach(({ r }) => (r.historico || []).slice().reverse().forEach(h => historico.push({ 'Espaço / entidade': titleOf(r), 'Data': whenOf(h), 'O que foi feito': h.texto, 'Resposta': h.resposta, 'Projetos': (h.projetos || []).join(', ') })));
+  const wb = XLSX.utils.book_new();
+  const add = (name, data, widths) => { const ws = XLSX.utils.json_to_sheet(data.length ? data : [{}]); ws['!cols'] = widths.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, name); };
+  add('Espaços', espacos, [34, 13, 26, 10, 30, 30, 18, 22, 9, 9, 10, 14, 20, 26, 14, 50, 50, 16, 30, 30, 30, 50, 30]);
+  add('Contactos', contactos, [34, 13, 30, 26, 34, 22, 14]);
+  add('Histórico', historico, [34, 12, 60, 50, 26]);
+  XLSX.writeFile(wb, `programadores-${today()}.xlsx`);
+  toast(`Excel com ${rows.length} espaços descarregado`);
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!gh) return;
+  if (document.visibilityState === 'hidden' && pending()) pushChanges();
+  if (document.visibilityState === 'visible' && !pending() && !pushing && !openId && Date.now() - lastLoad > 60000) loadAll(true).catch(() => {});
+});
+window.addEventListener('beforeunload', e => { if (gh && (pending() || pushing)) { pushChanges(); e.preventDefault(); e.returnValue = ''; } });
+
+(async () => {
+  const creds = readCreds();
+  if (creds && creds.token && creds.owner) {
+    $('#lOwner').value = creds.owner; $('#lRepo').value = creds.repo || '';
+    try { await connect(creds); } catch (err) { gh = null; showLogin(err.message); }
+  } else showLogin('');
+})();
+
+})();
+</script>
+</body>
+</html>
