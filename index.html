@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Programadores Instável</title>
+<title>Programação Instável</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -94,6 +94,7 @@ aside.filters { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px
 .row .sub { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere }
 .row .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px }
 .tag { font-size: 11px; font-weight: 600; letter-spacing: .02em; border-radius: 4px; padding: 1px 6px; background: var(--sunk); color: var(--muted) }
+.star { color: #D4A017 }
 .tag.part { background: var(--accent-soft); color: var(--accent) }
 .tag.int { display: inline-flex; align-items: center; gap: 5px; color: var(--ink) }
 .tag.int .dot { width: 7px; height: 7px }
@@ -198,7 +199,7 @@ html { -webkit-text-size-adjust: 100% }
 body { margin: 0; font-size: 14px }
 img { max-width: 100% }
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px) }
-#syncLbl { font-family: var(--f-mono); font-size: 12px }
+#syncLbl { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); margin-right: auto }
 .loginwrap { min-height: 100vh; display: grid; place-items: center; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px }
 .loginwrap[hidden] { display: none !important }
 .logincard { width: min(420px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; gap: 14px }
@@ -213,7 +214,7 @@ img { max-width: 100% }
 
 <div id="login" class="loginwrap" hidden>
   <form class="logincard" id="loginForm" novalidate>
-    <h1>Programadores Instável<small>Liga a página ao repositório privado onde estão os dados.</small></h1>
+    <h1>Programação Instável<small>Liga a página ao repositório privado onde estão os dados.</small></h1>
     <div class="field"><label class="lbl" for="lOwner">Utilizador do GitHub</label><input id="lOwner" autocomplete="username" placeholder="ex.: instavel-raquel"></div>
     <div class="field"><label class="lbl" for="lRepo">Repositório dos dados</label><input id="lRepo" placeholder="programadores-dados"></div>
     <div class="field"><label class="lbl" for="lToken">Chave de acesso (token)</label><input id="lToken" type="password" autocomplete="current-password" placeholder="github_pat_…"></div>
@@ -227,7 +228,7 @@ img { max-width: 100% }
 <div id="app" hidden>
 <div class="wrap">
   <header class="top">
-    <h1>Programadores Instável<small>Espaços, festivais e programadores para difusão das peças · <span id="syncLbl"></span></small></h1>
+    <h1>Programação Instável<small>Gestão da programação nacional e internacional da Instável</small></h1>
     <div class="actions">
       <button class="btn filters-toggle" id="btnFilters" type="button">Filtros</button>
       <button class="btn" id="btnEmails" type="button">Copiar emails</button>
@@ -246,7 +247,6 @@ img { max-width: 100% }
       <div class="f"><label for="fq">Pesquisar</label><input type="search" id="fq" placeholder="Nome, pessoa, email, peça…"></div>
       <div class="f"><label for="ftipo">Natureza da estrutura</label><select id="ftipo"></select></div>
       <div class="f"><label for="frede">Rede</label><select id="frede"></select></div>
-      <div class="f"><label for="fint">Interesse</label><select id="fint"></select></div>
       <div class="f" id="wrapReg"><label for="freg">Região</label><select id="freg"></select></div>
       <div class="f" id="wrapPais"><label for="fpais">País</label><select id="fpais"></select></div>
       <div class="f"><label for="fproj">Já contactado sobre</label><select id="fproj"></select></div>
@@ -255,9 +255,9 @@ img { max-width: 100% }
         <div class="checks">
           <label><input type="checkbox" id="fpar"> Nossos parceiros</label>
           <label><input type="checkbox" id="faloj"> Damos alojamento</label>
+          <label id="wrapPrio"><input type="checkbox" id="fprio"> <span class="star">★</span> Só prioritárias</label>
           <label id="wrapFront"><input type="checkbox" id="ffront"> Fronteira (Espanha)</label>
-          <label><input type="checkbox" id="fseguir"> Próximo passo para hoje ou em atraso</label>
-          <label><input type="checkbox" id="fsemmail"> Sem email</label>
+          <label><input type="checkbox" id="fseguir"> Seguimentos por fazer (data já chegou)</label>
         </div>
       </div>
       <button class="btn ghost sm reset" id="btnReset" type="button">Limpar filtros</button>
@@ -266,6 +266,7 @@ img { max-width: 100% }
     <main class="results">
       <div class="resbar">
         <span><span class="n" id="count">0</span> <span id="countLbl">espaços</span></span>
+        <span id="syncLbl" class="sync"></span>
         <label>Ordenar <select id="sort">
           <option value="nome">Nome</option>
           <option value="local">Região / país</option>
@@ -293,10 +294,8 @@ const REDES = ['RTCP', 'RPAC'];
 const REGIOES = ['Norte', 'Centro', 'Área Metropolitana de Lisboa', 'Alentejo', 'Algarve', 'Açores', 'Madeira'];
 const ESTADOS = [
   ['Por contactar', '--s-none'], ['Contactado', '--s-sent'], ['Respondeu', '--s-reply'],
-  ['Em conversa', '--s-talk'], ['Programado', '--s-done'], ['Sem interesse', '--s-no']];
+  ['Em conversa', '--s-talk'], ['Programado 2027', '--s-done'], ['Sem interesse para 2027', '--s-no']];
 const ESTADO_COLOR = Object.fromEntries(ESTADOS);
-const INTERESSES = [['Com muito interesse', '--s-done'], ['Com algum interesse', '--s-reply'], ['Sem muito interesse', '--s-no']];
-const INT_COLOR = Object.fromEntries(INTERESSES);
 const IDIOMAS = ['Português', 'Inglês', 'Espanhol', 'Francês', 'Italiano', 'Alemão'];
 const DEFAULT_PROJ = ['Terreiro', 'RARA', 'Palcos Instáveis', 'futura'];
 
@@ -319,7 +318,7 @@ let loaded = false;
 let openId = null;
 let draft = null; // working copy of the open ficha
 
-const F_DEFAULT = { ambito: 'Todos', estado: '', tipo: '', rede: '', int: '', regiao: '', pais: '', proj: '', peca: '', par: false, aloj: false, front: false, seguir: false, semmail: false, q: '', sort: 'nome' };
+const F_DEFAULT = { ambito: 'Todos', estado: '', tipo: '', rede: '', int: '', regiao: '', pais: '', proj: '', peca: '', par: false, prio: false, aloj: false, front: false, seguir: false, semmail: false, q: '', sort: 'nome' };
 let f = { ...F_DEFAULT };
 try { const s = JSON.parse(localStorage.getItem('progInstavelFiltros') || 'null'); if (s) f = { ...F_DEFAULT, ...s, q: '' }; } catch (e) {}
 const saveFilters = () => { try { localStorage.setItem('progInstavelFiltros', JSON.stringify(f)); } catch (e) {} };
@@ -345,16 +344,15 @@ function matches(r, skip) {
   if (skip !== 'estado' && f.estado && r.estado !== f.estado) return false;
   if (f.tipo && r.tipo !== f.tipo) return false;
   if (f.rede && !(r.rede || []).includes(f.rede)) return false;
-  if (f.int && (f.int === 'Sem indicação' ? r.interesse : r.interesse !== f.int)) return false;
   if (f.regiao && (r.ambito !== 'Nacional' || r.regiao !== f.regiao)) return false;
   if (f.pais && (r.ambito !== 'Internacional' || r.pais !== f.pais)) return false;
   if (f.proj && !(r.historico || []).some(h => (h.projetos || []).includes(f.proj))) return false;
   if (f.peca && ![...(r.pecas || []), ...(r.coproducoes || [])].some(p => norm(p.peca) === norm(f.peca))) return false;
   if (f.par && !r.parceiro) return false;
+  if (f.prio && !(r.ambito === 'Internacional' && r.prioritario)) return false;
   if (f.aloj && !r.alojamento) return false;
   if (f.front && !r.fronteira) return false;
   if (f.seguir && !(r.proximaData && r.proximaData <= today())) return false;
-  if (f.semmail && (r.contactos || []).some(c => c.email)) return false;
   if (f.q) { const h = hay(r); if (!norm(f.q).split(/\s+/).filter(Boolean).every(t => h.includes(t))) return false; }
   return true;
 }
@@ -388,7 +386,6 @@ function renderControls() {
   }).join('');
   opts($('#ftipo'), TIPOS, 'Todas', f.tipo);
   opts($('#frede'), REDES, 'Todas', f.rede);
-  opts($('#fint'), [...INTERESSES.map(i => i[0]), 'Sem indicação'], 'Qualquer', f.int);
   opts($('#freg'), REGIOES, 'Todas', f.regiao);
   const paises = [...new Set(all.filter(r => r.ambito === 'Internacional' && r.pais).map(r => r.pais))].sort((a, b) => a.localeCompare(b, 'pt'));
   opts($('#fpais'), paises, 'Todos', f.pais);
@@ -399,7 +396,9 @@ function renderControls() {
   $('#wrapReg').hidden = f.ambito === 'Internacional';
   $('#wrapPais').hidden = f.ambito === 'Nacional';
   $('#wrapFront').hidden = f.ambito === 'Nacional';
-  $('#fpar').checked = f.par; $('#faloj').checked = f.aloj; $('#ffront').checked = f.front; $('#fseguir').checked = f.seguir; $('#fsemmail').checked = f.semmail;
+  $('#wrapPrio').hidden = f.ambito === 'Nacional';
+  $('#fprio').checked = f.prio;
+  $('#fpar').checked = f.par; $('#faloj').checked = f.aloj; $('#ffront').checked = f.front; $('#fseguir').checked = f.seguir; 
   $('#sort').value = f.sort;
   if (document.activeElement !== $('#fq')) $('#fq').value = f.q;
 }
@@ -423,13 +422,12 @@ function renderList() {
     const loc = r.ambito === 'Nacional' ? [r.localidade, r.regiao].filter(Boolean).join(' · ') : [r.localidade, r.pais].filter(Boolean).join(' · ');
     const tags = [`<span class="tag">${r.ambito === 'Nacional' ? 'PT' : 'INT'}</span>`, `<span class="tag">${esc(r.tipo || 'Sem tipo')}</span>`]
       .concat((r.rede || []).map(x => `<span class="tag">${esc(x)}</span>`))
-      .concat(r.interesse && INT_COLOR[r.interesse] ? [`<span class="tag int"><span class="dot" style="background:var(${INT_COLOR[r.interesse]})"></span>${esc(r.interesse)}</span>`] : [])
       .concat(r.parceiro ? ['<span class="tag part">Parceiro</span>'] : [])
       .concat(r.fronteira ? ['<span class="tag">Fronteira</span>'] : []);
     const late = r.proximaData && r.proximaData <= t;
     const next = r.proximoPasso || r.proximaData ? `<span class="next${late ? ' late' : ''}">${r.proximaData ? fmtDate(r.proximaData) + ' · ' : ''}${esc(r.proximoPasso || 'Próximo passo')}</span>` : '';
-    return `<button type="button" class="row" data-id="${esc(id)}"${r.interesse && INT_COLOR[r.interesse] ? ` style="box-shadow: inset 4px 0 0 var(${INT_COLOR[r.interesse]})"` : ''}>
-      <div><div class="name">${esc(titleOf(r))}</div>${subOf(r) ? `<div class="sub">${esc(subOf(r))}</div>` : ''}<div class="tags">${tags.join('')}</div></div>
+    return `<button type="button" class="row" data-id="${esc(id)}">
+      <div><div class="name">${r.ambito === 'Internacional' && r.prioritario ? '<span class="star" title="Prioritária para nós">★</span> ' : ''}${esc(titleOf(r))}</div>${subOf(r) ? `<div class="sub">${esc(subOf(r))}</div>` : ''}<div class="tags">${tags.join('')}</div></div>
       <div class="loc">${esc(loc) || '<span class="sub">—</span>'}</div>
       <div class="ponto">${h ? `<div class="txt"><span class="when">${esc(whenOf(h))}</span>${esc(h.texto)}${h.resposta ? ' → ' + esc(h.resposta) : ''}</div>` : '<span class="none">Ainda sem contactos</span>'}</div>
       <div class="st"><span class="pill"><span class="dot" style="background:var(${ESTADO_COLOR[r.estado] || '--s-none'})"></span>${esc(r.estado || 'Por contactar')}</span>${next}</div>
@@ -525,7 +523,6 @@ function renderFicha(keepScroll) {
       <h3>Estado e próximo passo</h3>
       <div class="grid2">
         ${sel('estado', 'Estado', ESTADOS.map(e => e[0]))}
-        ${sel('interesse', 'Interesse', INTERESSES.map(i => i[0]))}
         ${inp('proximoPasso', 'Próximo passo', 'text')}
         ${inp('proximaData', 'Data', 'date')}
       </div>
@@ -559,6 +556,7 @@ function renderFicha(keepScroll) {
       <div class="inline-checks" style="margin-top:10px">
         <label><input type="checkbox" data-b="parceiro"${r.parceiro ? ' checked' : ''}> Nosso parceiro</label>
         <label><input type="checkbox" data-b="alojamento"${r.alojamento ? ' checked' : ''}> Damos alojamento</label>
+        ${isNac ? '' : `<label><input type="checkbox" data-b="prioritario"${r.prioritario ? ' checked' : ''}> <span class="star">★</span> Prioritária para nós</label>`}
         ${isNac ? '' : `<label><input type="checkbox" data-b="fronteira"${r.fronteira ? ' checked' : ''}> Fronteira</label>`}
       </div>
     </section>
@@ -654,12 +652,12 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { if ($('.mo
 
 /* ---------- list & filter events ---------- */
 $('#list').addEventListener('click', e => { const r = e.target.closest('.row'); if (r) openFicha(r.dataset.id); });
-$('#ambito').addEventListener('click', e => { const b = e.target.closest('[data-amb]'); if (!b) return; f.ambito = b.dataset.amb; if (f.ambito === 'Internacional') f.regiao = ''; if (f.ambito === 'Nacional') { f.pais = ''; f.front = false; } saveFilters(); renderControls(); renderList(); });
+$('#ambito').addEventListener('click', e => { const b = e.target.closest('[data-amb]'); if (!b) return; f.ambito = b.dataset.amb; if (f.ambito === 'Internacional') f.regiao = ''; if (f.ambito === 'Nacional') { f.pais = ''; f.front = false; f.prio = false; } saveFilters(); renderControls(); renderList(); });
 $('#statusbar').addEventListener('click', e => { const b = e.target.closest('[data-est]'); if (!b) return; f.estado = f.estado === b.dataset.est ? '' : b.dataset.est; saveFilters(); renderControls(); renderList(); });
 const bindSel = (id, key) => $(id).addEventListener('change', e => { f[key] = e.target.value; saveFilters(); renderControls(); renderList(); });
-bindSel('#ftipo', 'tipo'); bindSel('#frede', 'rede'); bindSel('#fint', 'int'); bindSel('#freg', 'regiao'); bindSel('#fpais', 'pais'); bindSel('#fproj', 'proj'); bindSel('#fpeca', 'peca'); bindSel('#sort', 'sort');
+bindSel('#ftipo', 'tipo'); bindSel('#frede', 'rede'); bindSel('#freg', 'regiao'); bindSel('#fpais', 'pais'); bindSel('#fproj', 'proj'); bindSel('#fpeca', 'peca'); bindSel('#sort', 'sort');
 const bindChk = (id, key) => $(id).addEventListener('change', e => { f[key] = e.target.checked; saveFilters(); renderControls(); renderList(); });
-bindChk('#fpar', 'par'); bindChk('#faloj', 'aloj'); bindChk('#ffront', 'front'); bindChk('#fseguir', 'seguir'); bindChk('#fsemmail', 'semmail');
+bindChk('#fpar', 'par'); bindChk('#fprio', 'prio'); bindChk('#faloj', 'aloj'); bindChk('#ffront', 'front'); bindChk('#fseguir', 'seguir'); 
 let qT; $('#fq').addEventListener('input', e => { clearTimeout(qT); qT = setTimeout(() => { f.q = e.target.value; renderControls(); renderList(); }, 150); });
 $('#btnReset').addEventListener('click', () => { f = { ...F_DEFAULT, ambito: f.ambito, sort: f.sort }; saveFilters(); renderControls(); renderList(); });
 $('#btnFilters').addEventListener('click', () => $('#filters').classList.toggle('open'));
@@ -848,9 +846,9 @@ $('#btnXlsx').addEventListener('click', () => {
     return {
       'Nome': titleOf(r), 'Âmbito': r.ambito, 'Natureza': r.tipo, 'Rede': (r.rede || []).join(', '),
       'Espaço': r.espaco, 'Entidade': r.entidade, 'Localidade': r.localidade,
-      'Região / País': r.ambito === 'Nacional' ? r.regiao : r.pais, 'Fronteira': r.fronteira ? 'Sim' : '',
+      'Região / País': r.ambito === 'Nacional' ? r.regiao : r.pais, 'Fronteira': r.fronteira ? 'Sim' : '', 'Prioritária': r.ambito === 'Internacional' && r.prioritario ? 'Sim' : '',
       'Parceiro': r.parceiro ? 'Sim' : '', 'Damos alojamento': r.alojamento ? 'Sim' : '',
-      'Estado': r.estado, 'Interesse': r.interesse || '', 'Próximo passo': r.proximoPasso || '', 'Data próximo passo': r.proximaData || '',
+      'Estado': r.estado, 'Próximo passo': r.proximoPasso || '', 'Data próximo passo': r.proximaData || '',
       'Ponto de situação': h ? `${whenOf(h)} — ${h.texto}${h.resposta ? ' → ' + h.resposta : ''}` : '',
       'Contactos': (r.contactos || []).map(c => [c.funcao, c.nome, c.email].filter(Boolean).join(' · ')).join('\n'),
       'Telefone': r.telefone, 'Site': r.site,
